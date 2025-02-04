@@ -15,10 +15,12 @@ router.get("/:id", withLogging(contactController.getById, "Contact Found"));
 
 
 router.post("/", withLogging(contactController.create, "Contact created"));
+router.post("/notify-contacts", withLogging(contactController.notify, "Contacts notified"));
+
 router.put("/:id", withLogging(contactController.update, "Contact Updated"));
+
 router.delete("/:id", withLogging(contactController.delete, "Contact Deleted"));
 
-router.post("/notify-contacts", withLogging(contactController.notify, "Contacts notified"));
 
 
 module.exports = router;

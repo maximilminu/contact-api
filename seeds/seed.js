@@ -114,11 +114,35 @@ const contacts = [
   },
 ];
 
-createConnection()
+const retryConnection = (retries = 5, delay = 5000) => {
+  return new Promise((resolve, reject) => {
+    const attemptConnection = (attempt) => {
+      createConnection()
+        .then(() => {
+          console.log("Database connection established!");
+          resolve();
+        })
+        .catch((error) => {
+          if (attempt < retries) {
+            console.error(`Connection attempt ${attempt + 1} failed:`, error.message);
+            console.log(`Retrying in 5 seconds...`);
+            setTimeout(() => attemptConnection(attempt + 1), delay);
+          } else {
+            console.error("Failed to connect to the database after multiple attempts");
+            reject(error);
+          }
+        });
+    };
+
+    attemptConnection(0);
+  });
+};
+
+retryConnection()
   .then(() => {
     const contactRepository = getRepository(Contact);
 
-    contactRepository
+    return contactRepository
       .find()
       .then((existingContacts) => {
         if (existingContacts.length === 0) {
@@ -133,13 +157,9 @@ createConnection()
       .then(() => {
         console.log("Seed data inserted successfully!");
         process.exit(0);
-      })
-      .catch((error) => {
-        console.error("Error inserting seed data:", error);
-        process.exit(1);
       });
   })
   .catch((error) => {
-    console.error("Database connection error:", error);
+    console.error("Error during seeding process:", error);
     process.exit(1);
   });

@@ -10,8 +10,11 @@ services:
       POSTGRES_DB: contact_db
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laNacionRoot -d contact_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   api:
     build: .
     container_name: contact_api
@@ -25,27 +28,15 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
-    # volumes:
-    # - .:/app
-    # - /app/node_modules
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /app
-        - action: rebuild
-          path: package.json
-    command: npx nodemon --legacy-watch src/index.js
-    # command: sh -c "npm start"
-
-
+      db:
+        condition: service_healthy
 
   seeder:
     build: .
     container_name: contact_seeder
     depends_on:
-      - api
+      db:
+        condition: service_healthy
     environment:
       DB_HOST: db
       DB_USER: laNacionRoot
