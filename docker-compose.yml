@@ -1,0 +1,60 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: laNacionRoot
+      POSTGRES_PASSWORD: Pass123
+      POSTGRES_DB: contact_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  api:
+    build: .
+    container_name: contact_api
+    environment:
+      DB_HOST: db
+      DB_USER: laNacionRoot
+      DB_PASSWORD: Pass123
+      DB_NAME: contact_db
+      DB_PORT: 5432
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    # volumes:
+    # - .:/app
+    # - /app/node_modules
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+        - action: rebuild
+          path: package.json
+    command: npx nodemon --legacy-watch src/index.js
+    # command: sh -c "npm start"
+
+
+
+  seeder:
+    build: .
+    container_name: contact_seeder
+    depends_on:
+      - api
+    environment:
+      DB_HOST: db
+      DB_USER: laNacionRoot
+      DB_PASSWORD: Pass123
+      DB_NAME: contact_db
+      DB_PORT: 5432
+    volumes:
+      - .:/app
+    command: sh -c "node seeds/seed.js"
+
+volumes:
+  postgres_data:
