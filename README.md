@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Esta API permite la gestión de contactos, permite búsquedar, creaciar, modificar y el envío de notificaciones a través de plantillas.
+Esta API permite la gestión de contactos, donde se permite buscar, crear, modificar y eliminar contactos, a su vez tambien permite el envío de notificaciones a través de plantillas.
 
 ## Tecnologías Utilizadas
 
@@ -19,82 +19,86 @@ Esta API permite la gestión de contactos, permite búsquedar, creaciar, modific
 -Docker Compose
 -Clonar el repositorio:
 
-git clone https://github.com/tu-repo/contact-api.git
+git clone https://github.com/maximilminu/contact-api.git
 cd contact-api
 
-Levantar los contenedores:
+### Levantar los contenedores:
 
 docker-compose up --build
 
-La API estará corriendo en http://localhost:3000
+Se vera un log como: 
+contact_seeder  | Seed data already exists. Skipping insertion.
+contact_seeder  | Seed data inserted successfully!
+contact_api     | Server is running on http://localhost:3000
+contact_api     | Database connected successfully
 
-Instalación sin Docker
 
-Clonar el repositorio:
+El docker compose crea una base de datos PostgreSQL y corre un seed de contactos, si la base de datos ya posee informacion, no va a correr el seed.
 
-git clone https://github.com/tu-repo/contact-api.git
-cd contact-api
+## Uso
+### Endpoints
 
-Instalar dependencias:
+**GET**
+1- Obtener todos los contactos
+GET [/contacts](http://localhost:3000/contacts)
 
-npm install
+2- GET by ID
+Trae el usuario con el id buscado
+GET [/contacts](http://localhost:3000/contacts/:id)
 
-Configurar las variables de entorno (ver sección correspondiente)
+3- GET by location
+Trae todos los contactos que concuerdan con la ubicacion buscada
+GET [/contacts](http://localhost:3000/contacts/by-location/:location)
 
-Iniciar la API:
+4- GET search Contact
+Este endpoint trae todos los contactos que coinciden con el parametro de búsqueda, busca por cualquier parametro del contacto, salvo image_profile y birthdate
+GET [/contacts](http://localhost:3000/contacts/search/:query)
 
-npm start
-
-Uso
-
-Endpoints principales
-
-Obtener todos los contactos
-
-GET /contacts
-
-Respuesta:
-
-[
+**POST**
+1- POST create contact
+Espera un payload con los datos del contacto, Ej:
 {
-"id": 1,
-"name": "John Doe",
-"email": "john@example.com"
+"name": "rminutillo",
+"company": "Farmacia",
+"email":"rminu@gmail.com",
+"birthdate": "12/10/1994",
+"phone":8888888888,
+"address":"sgto cabral 5600",
+"city":"canning",
+"state":"Buenos Aires"
 }
-]
+POST [/contacts](http://localhost:3000/contacts)
 
-Notificar contactos
-
-POST /contacts/notify
-
-Cuerpo de la solicitud:
-
+2- POST notifyContact
+Espera un payload con los IDs de contacto, Ej:
 {
-"contactIds": [1, 2, 3]
+    "contactIds": [5,6,7]
 }
+POST [/contacts](http://localhost:3000/contacts/notify-contacts)
 
-Respuesta:
-
+**PUT**
+1- PUT Update contact
+Espera un payload con el campo del contacto a modificar, Ej:
 {
-"message": "Notifications sent successfully"
+    "name": "Maximilianoooo",
+    "company": "La Nacion"
 }
+PUT [/contacts](http://localhost:3000/contacts/:id)
 
-Variables de Entorno
+**DELETE**
+1- DELETE by ID
+Elimina el contacto que coincide con el id enviado por param
+DELETE [/contacts](http://localhost:3000/contacts/:id)
 
-Para configurar la API, debes definir las siguientes variables de entorno en un archivo .env:
 
-DB_HOST=db
-DB_USER=laNacionRoot
-DB_PASSWORD=Pass123
-DB_NAME=contact_db
-DB_PORT=5432
-PORT=3000
-
-Estructura del Proyecto
+## Estructura del Proyecto
 
 contact-api/
+│-- seeds/
 │-- src/
+│ │-- config/
 │ │-- controllers/
+│ │-- entities/
 │ │-- routes/
 │ │-- services/
 │ │-- utils/
@@ -102,7 +106,3 @@ contact-api/
 │-- docker-compose.yml
 │-- package.json
 │-- README.md
-
-Contribución
-
-Si deseas contribuir, puedes hacer un fork del repositorio, crear una rama con tus cambios y luego abrir un pull request.
